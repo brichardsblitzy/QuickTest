@@ -84,6 +84,17 @@ test('GET /hello-world is unchanged', async () => {
   assert.equal(res.headers.get('content-type'), null);
   assert.equal(res.headers.get('content-length'), '14');
   assert.equal(await res.text(), 'Hello, World!\n');
+
+  // The route is matched by exact string equality on the request path, so a path
+  // that merely shares its prefix reaches the preserved response, not the route.
+  for (const fallThroughPath of ['/good-evening/', '/good-evening?x=1']) {
+    const fallThrough = await fetch(`${baseUrl}${fallThroughPath}`);
+
+    assert.equal(fallThrough.status, 200);
+    assert.equal(fallThrough.headers.get('content-type'), null);
+    assert.equal(fallThrough.headers.get('content-length'), '14');
+    assert.equal(await fallThrough.text(), 'Hello, World!\n');
+  }
 });
 
 test('server starts without errors with both endpoints registered', async () => {

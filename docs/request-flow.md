@@ -36,9 +36,11 @@ Run from the repository root, with the server started by `node server.js` and li
 - `curl http://localhost:3000/good-evening` returns `Good evening`
 - `curl http://localhost:3000/hello-world` returns `Hello world` (unchanged)
 
-The second example paraphrases the body. `/hello-world` has no route of its own: it falls through to the existing call, which returns exactly `Hello, World!` plus LF — status `200`, `Content-Length: 14`, and no `Content-Type` header. The stronger instruction that existing endpoint behaviour is not modified governs, and the bytes that path returns today are the bytes it returns after the change.
+The second example paraphrases the body. `/hello-world` has no route of its own: it falls through to the existing call, which returns exactly `Hello, World!` plus LF — status `200`, `Content-Length: 14`, and no `Content-Type` header. This path's response is unchanged by this work: the bytes it returned before are the bytes it returns now.
 
 ## Measured evidence (Node.js v22.23.3)
+
+Both blocks below are excerpts rather than complete responses: they give the status line, the `Content-Type` where the endpoint sets one, the `Content-Length` and the body. The runtime adds `Date`, `Connection: keep-alive` and `Keep-Alive: timeout=5` to both responses, and those are left out.
 
 `GET /good-evening`:
 

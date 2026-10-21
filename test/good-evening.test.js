@@ -16,15 +16,17 @@ const PRESERVED_BODY = 'Hello, World!\n';
 const PRESERVED = Buffer.from(PRESERVED_BODY);
 const EVENING_BODY = 'Good evening';
 const READINESS_TIMEOUT_MS = 5000;
+const REQUEST_TIMEOUT_MS = 5000;
 
 let child = null;
+let childClosed = false;
 
 // Resolves once the spawned server has gone and released the fixed port 3000, so the next run can
 // bind it. Safe to call twice: the child reference is cleared only after the close is observed, so a
 // second call waits for the same exit instead of returning while the child is still running.
 function stopServer(){
   const proc = child;
-  if(!proc||proc.exitCode!==null||proc.signalCode!==null){
+  if(!proc||childClosed||proc.exitCode!==null||proc.signalCode!==null){
     child = null;
     return Promise.resolve();
   }
@@ -41,6 +43,7 @@ function startServer(){
   return new Promise((resolve,reject)=>{
     const proc = spawn(process.execPath,[serverPath]);
     child = proc;
+    childClosed = false;
     let stdout = '';
     let stderr = '';
     let settled = false;
@@ -77,6 +80,7 @@ function startServer(){
       settle(new Error('server could not be started: ' + error.message));
     });
     proc.on('close',(code,signal)=>{
+      childClosed = true;
       settle(new Error('server exited before readiness with code ' + code + ' and signal ' + signal + '; stderr: ' + stderr));
     });
   });
@@ -86,7 +90,7 @@ function startServer(){
 // rather than normalised text.
 function request(method,urlPath){
   return new Promise((resolve,reject)=>{
-    const req = http.request({ host:'127.0.0.1', port:port, path:urlPath, method:method, agent:false },(res)=>{
+    const req = http.request({ host:'127.0.0.1', port:port, path:urlPath, method:method, agent:false, timeout:REQUEST_TIMEOUT_MS },(res)=>{
       const chunks = [];
       res.on('data',(chunk)=>{
         chunks.push(chunk);
@@ -95,6 +99,11 @@ function request(method,urlPath){
         resolve({ status:res.statusCode, headers:res.headers, body:Buffer.concat(chunks) });
       });
       res.on('error',reject);
+    });
+    // The wait for a response is bounded as well: a server that accepted the connection and never
+    // replied would leave the promise pending, and the runner applies no per-test timeout of its own.
+    req.on('timeout',()=>{
+      req.destroy(new Error('no response to ' + method + ' ' + urlPath + ' within ' + REQUEST_TIMEOUT_MS + ' ms'));
     });
     req.on('error',reject);
     req.end();

@@ -19,16 +19,22 @@ const READINESS_TIMEOUT_MS = 5000;
 
 let child = null;
 
-// Resolves once the spawned server has exited, so the fixed port 3000 is released before the run ends.
+// Resolves once the spawned server has gone and released the fixed port 3000, so the next run can
+// bind it. Safe to call twice: the child reference is cleared only after the close is observed, so a
+// second call waits for the same exit instead of returning while the child is still running.
 function stopServer(){
   const proc = child;
-  child = null;
   if(!proc||proc.exitCode!==null||proc.signalCode!==null){
+    child = null;
     return Promise.resolve();
   }
-  const exited = new Promise((resolve)=>proc.once('exit',resolve));
-  proc.kill('SIGTERM');
-  return exited;
+  return new Promise((resolve)=>{
+    proc.once('close',()=>{
+      child = null;
+      resolve();
+    });
+    proc.kill('SIGTERM');
+  });
 }
 
 function startServer(){
@@ -53,9 +59,10 @@ function startServer(){
     };
     // The wait is bounded: a second listener on the fixed port 3000 exits at once with EADDRINUSE, so
     // an unbounded wait would hang instead of surfacing the child's real error.
-    timer = setTimeout(()=>{
-      stopServer();
+    timer = setTimeout(async ()=>{
+      const stopped = stopServer();
       settle(new Error('server was not ready within ' + READINESS_TIMEOUT_MS + ' ms; stderr: ' + stderr));
+      await stopped;
     },READINESS_TIMEOUT_MS);
     proc.stdout.on('data',(chunk)=>{
       stdout += chunk.toString();
@@ -69,7 +76,7 @@ function startServer(){
     proc.on('error',(error)=>{
       settle(new Error('server could not be started: ' + error.message));
     });
-    proc.on('exit',(code,signal)=>{
+    proc.on('close',(code,signal)=>{
       settle(new Error('server exited before readiness with code ' + code + ' and signal ' + signal + '; stderr: ' + stderr));
     });
   });
@@ -87,6 +94,7 @@ function request(method,urlPath){
       res.on('end',()=>{
         resolve({ status:res.statusCode, headers:res.headers, body:Buffer.concat(chunks) });
       });
+      res.on('error',reject);
     });
     req.on('error',reject);
     req.end();

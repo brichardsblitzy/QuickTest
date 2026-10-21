@@ -151,6 +151,23 @@ test('one server start serves both endpoints',async ()=>{
   assert.strictEqual(evening.status,200,'status for GET /good-evening');
   assert.strictEqual(evening.body.toString(),EVENING_BODY,'body for GET /good-evening');
   assert.strictEqual(evening.body.length,12,'body length in bytes for GET /good-evening');
+  // The route matches the path alone and never inspects the method, so every method sent to the exact
+  // path /good-evening receives the new response instead of the preserved catch-all fall-through.
+  const methods = ['POST','PUT','DELETE','PATCH','OPTIONS'];
+  for(const method of methods){
+    const label = method + ' /good-evening';
+    const response = await request(method,'/good-evening');
+    assert.strictEqual(response.status,200,'status for ' + label);
+    assert.strictEqual(response.headers['content-type'],'text/plain','content-type for ' + label);
+    assert.strictEqual(response.headers['content-length'],'12','content-length for ' + label);
+    assert.strictEqual(response.body.length,12,'body length in bytes for ' + label);
+    assert.deepStrictEqual(response.body,Buffer.from(EVENING_BODY),'body for ' + label);
+  }
+  const head = await request('HEAD','/good-evening');
+  assert.strictEqual(head.status,200,'status for HEAD /good-evening');
+  assert.strictEqual(head.headers['content-type'],'text/plain','content-type for HEAD /good-evening');
+  assert.strictEqual(head.headers['content-length'],undefined,'content-length for HEAD /good-evening');
+  assert.strictEqual(head.body.length,0,'body length in bytes for HEAD /good-evening');
   const hello = await request('GET','/hello-world');
   assert.strictEqual(hello.status,200,'status for GET /hello-world');
   assert.strictEqual(hello.body.length,14,'body length in bytes for GET /hello-world');

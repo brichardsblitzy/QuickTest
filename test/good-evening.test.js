@@ -99,6 +99,8 @@ test('GET / is unchanged',async ()=>{
   const res = await fetch(BASE_URL+ROOT_PATH);
   assert.strictEqual(res.status,200);
   assert.strictEqual(await res.text(),PRESERVED_BODY);
+  assert.strictEqual(res.headers.get('content-type'),null);
+  assert.strictEqual(res.headers.get('content-length'),PRESERVED_LENGTH);
 });
 
 test('server starts without errors with both routes registered',async ()=>{

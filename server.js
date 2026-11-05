@@ -1,1 +1,1 @@
-require('http').createServer((req,res)=>res.end('Hello, World!\n')).listen(3000,()=>console.log('Server running at http://127.0.0.1:3000/'));
+require('http').createServer(require('express')().disable('x-powered-by').get('/good-evening',(req,res)=>res.setHeader('Content-Type','text/plain').end('Good evening\n')).get('/',(req,res)=>res.end('Hello, World!\n'))).listen(3000,()=>console.log('Server running at http://127.0.0.1:3000/'));

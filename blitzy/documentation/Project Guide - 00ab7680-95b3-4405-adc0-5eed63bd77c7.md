@@ -1,65 +1,64 @@
 # 1. Executive Summary
 
-This project is a bounded, additive change to a one-file Node.js service: a second HTTP route and the one dependency that hosts it. It is delivered, runnable and verified; one written decision remains open, on an 18-byte segment of the startup statement.
+This project is a bounded, additive change to a one-file Node.js service: a second HTTP route and the one dependency that hosts it. It is delivered and verified. One piece of written documentation still describes the service as it was before the change, and that is the only work outstanding.
 
 ## 1.1 Project Overview
 
-The single-route Node.js server is now a two-route Express application in the same one-line file. `GET /good-evening` answers `200`, `text/plain; charset=utf-8`, the exact 13-byte body `Good evening`. `GET /` still answers `200` with the byte-identical 14-byte `Hello, World!` and no `Content-Type`. `express` is the only new package, declared in a three-key root manifest; the service still runs as `node server.js`, binds port 3000 and logs once. Two files exist: no tests, docs, configuration layer or lockfile.
+The single-route Node.js server is now a two-route Express application held in the same one-line file, `server.js`. `GET /good-evening` answers `200`, `text/plain; charset=utf-8`, the exact 13-byte body `Good evening`. `GET /` answers `200` with the byte-identical 14-byte `Hello, World!` and still no `Content-Type`. `express` is the only new package, declared in a three-key root manifest, `package.json`; the service still starts as `node server.js`, binds port 3000 and prints one startup line. Apart from those two files the repository holds only this guide and the technical specification under `blitzy/documentation/`: no tests, no configuration layer, no lockfile.
 
 ## 1.2 Completion Status
 
 ```mermaid
 %%{init: {"themeVariables": {"pie1": "#5B39F3", "pie2": "#FFFFFF", "pieStrokeColor": "#B23AF2", "pieTitleTextSize": "14px", "pieLegendTextSize": "12px"}}}%%
-pie title Project completion: 95.1% (29.0 h delivered of 30.5 h)
-    "Completed Work" : 29.0
+pie title Project completion: 95.3% (30.5 h delivered of 32.0 h)
+    "Completed Work" : 30.5
     "Remaining Work" : 1.5
 ```
 
 | Metric | Hours |
 |---|---|
-| Total Hours | 30.5 |
-| Completed Hours (AI + Manual) | 29.0 |
+| Total Hours | 32.0 |
+| Completed Hours (AI + Manual) | 30.5 |
 | Remaining Hours | 1.5 |
 
-**Completion = 29.0 ÷ (29.0 + 1.5) × 100 = 95.1%**, over the two mapped files plus the path needed to run them.
+**Completion = 30.5 ÷ (30.5 + 1.5) × 100 = 95.3%**, measured over the two mapped files plus the path needed to install, run and verify them.
 
 ## 1.3 Key Accomplishments
 
 - **`GET /good-evening`** — `200`, `text/plain; charset=utf-8`, exactly 13 bytes (`server.js:1`).
-- **`GET /` unchanged** — `200`, 14 bytes, still no `Content-Type`, same handler.
-- **One dependency** — `express ^5.0.0` resolves to Express 5.3.0 from the manifest alone.
-- **Truthful startup** — one 41-byte line only when the port is bound; a failed bind exits non-zero with no line.
-- **Framework defaults elsewhere** — unmatched paths return the default `404`.
-- **Hostile input inert** — 261 cases, no `5xx`, no injected header, no script execution.
-- **Shape as specified** — two tracked files; no lockfile, docs, ignore, test artefact.
+- **`GET /` unchanged** — `200`, 14 bytes, still no `Content-Type`, same handler expression.
+- **One dependency** — `express ^5.0.0` resolves to 5.3.0 from the manifest alone, with no lockfile.
+- **Truthful startup** — one 41-byte line, printed only once the port is bound; a failed bind prints nothing and exits 1.
+- **Framework defaults elsewhere** — unmatched paths and unregistered methods take the default `404`; `HEAD` and `OPTIONS` answer as the framework serves them.
+- **Hostile input inert** — 24 traversal, CRLF, script, malformed and oversized probes: no `5xx`, no injected header, no reflected markup.
+- **Environment-free and quiet** — no environment read (`PORT` is ignored) and no per-request logging after 100+ requests.
+- **Shape as specified** — one statement on one line, three manifest keys, and no lockfile, ignore file, test artefact, handler or hardening.
 
 ## 1.4 Critical Unresolved Issues
 
-**3 of 28 open** — one requirement is delivered in an amended form awaiting a written decision, plus a review read and the platform decisions the scope leaves out of the code.
+**2 of 28 open** — one documentation edit a maintainer must make, and the platform decisions the agreed scope deliberately leaves outside the code.
 
 | Issue | Impact | Owner | ETA |
 |---|---|---|---|
-| The written contract still specifies the startup callback in `.listen`'s argument position, while `server.js:1` binds it to the server's `listening` event. The delivered form is the one that keeps the line truthful: in the prescribed position Express 5.3.0 consumes the bind error and the line would print on a failed start. | Contract text and tree disagree on 18 bytes. No runtime impact: port, log bytes, routes and the one-line diff are as specified. | Repository owner | 0.5 h |
-| The shipped statement carries one fewer independent review read than the version it replaced. | None observed — the success path, the failed-start path (7 runs) and both route contracts pass — but the review depth is uneven across the file's history. | Reviewer | 1.0 h |
+| The technical specification under `blitzy/documentation/` still describes the earlier single-route `node:http` server — "one 142-character line", zero dependencies, no manifest — and shows the startup callback in `.listen`'s argument position in 11 places, which `server.js:1` no longer uses. | Documentation drift only. The delivered code is correct as it stands: its startup form is what makes a failed bind exit 1 instead of printing readiness. A maintainer editing the file to match that specification literally would reinstate the defect. | Repository owner | 1.5 h |
 | Deployment prerequisites the agreed scope excludes from the code: a pinned dependency set, a port and transport posture for the fixed literal `3000`, a readiness probe at the orchestrator instead of a log-line match, and a pinned Node runtime. | One instance per host on plaintext HTTP, with an unpinned 5.x dependency and no in-band health endpoint. Accepted caveat of the agreed scope, not a defect. | Deploying team | 6.5 h if all are approved (not counted in Remaining Hours) |
 
 ## 1.5 Access Issues
 
-No access issues identified. The repository, the registry install and every command in Section 9 ran with no credential or extra permission; the application reads nothing external.
+No access issues identified. The repository, the registry install and every command in Section 9 ran with no credential and no extra permission; the application reads nothing external.
 
 ## 1.6 Recommended Next Steps
 
-1. **[High]** Ratify the amended startup statement so the specification and `server.js:1` agree — 0.5 h.
-2. **[Medium]** Give the delivered statement one independent read — 1.0 h.
-3. **[Medium]** Settle the port and transport posture for deployment — 2.0 h.
-4. **[Medium]** Probe `GET /` for readiness; pin the dependency set before the first production install — 1.5 h.
-5. **[Low]** Scan the resolved tree for advisories, pin the Node runtime, evaluate a fronting proxy — 3.0 h.
+1. **[High]** Bring the technical specification in line with the delivered two-route application and its startup form — 1.5 h.
+2. **[Medium]** Settle the port and transport posture for deployment — 2.0 h.
+3. **[Medium]** Probe `GET /` from the orchestrator for readiness, and pin the dependency set before the first production install — 1.5 h.
+4. **[Low]** Scan the resolved dependency tree for advisories, pin the Node runtime and evaluate a fronting proxy — 3.0 h.
 
-Steps 1–2 are the 1.5 h in Section 2.2; steps 3–5 the 6.5 h in Section 1.4.
+Step 1 is the 1.5 h in Section 2.2; steps 2–4 are the 6.5 h listed in Section 1.4.
 
 # 2. Project Hours Breakdown
 
-Hours cover the work this project was scoped to — the two mapped files and the install-and-boot path needed to run them — and nothing outside it. Each row traces to a named requirement of the specification.
+Hours cover the work this project was scoped to — the two mapped files plus the install-and-boot path needed to run them — and nothing outside it. Each row traces to a named requirement of the agreed scope.
 
 ## 2.1 Completed Work Detail
 
@@ -70,66 +69,66 @@ Hours cover the work this project was scoped to — the two mapped files and the
 | Root manifest declaring the sole dependency | 1.0 | Three-key `package.json` (`quicktest`, `1.0.0`, `express ^5.0.0`) and nothing else; installed with `--no-package-lock` so no lockfile is produced (`package.json:1-7`). |
 | Listener continuation: port 3000 and the startup line | 1.0 | The port literal and the 41-byte log text are unchanged; the line is emitted once per successful start and never at all otherwise. |
 | Startup failure signalling | 1.5 | The startup callback is attached to the server's `listening` event, so no `error` listener is registered and a bind conflict surfaces on stderr with a non-zero exit instead of reporting readiness (`server.js:1`). |
-| Startup and readiness verification | 1.5 | 65 cases: log bytes, stream and count; no per-request logging under ~70 requests; no secret or request-derived value in either stream; absent health, metrics and tracing endpoints; 7 failed-start runs. |
-| Route-contract verification, byte-exact | 5.0 | 153 cases: status, media type, exact body bytes and header set for both routes, plus method, path-variant, query, `Accept`, `HEAD` and idempotency behaviour against the live build. |
-| Lifecycle, dispatch, concurrency and shutdown verification | 3.0 | 53 cases: registration before the port opens, dispatch separation, 400+ concurrent requests, keep-alive and pipelined reuse, `SIGTERM`/`SIGINT`/`SIGHUP`, rapid rebind, second-instance bind conflict. |
-| Configuration and dependency-resolution verification | 3.0 | 44 cases: manifest key set, declared-versus-resolved version, clean install with no lockfile, fail-fast on a missing or unsatisfiable dependency, the port literal under ten environment-variable shapes. |
-| Adversarial request-surface verification | 6.0 | 261 cases: SQL, command, traversal, null-byte, malformed-encoding and oversized payloads; reflected-XSS probes including a browser render; CRLF and header injection; framing ambiguity; CORS, cookies and log integrity; availability under hostile bursts. |
-| Whole-deliverable acceptance and tree-state verification | 3.0 | 141 cases re-confirming both contracts, the failed-start path, the framework-default surface, and that the committed tree holds exactly the two files with no excluded artefact present. |
-| **Total** | **29.0** | Matches Completed Hours in Section 1.2. |
+| Startup and readiness verification | 1.5 | Log bytes, stream and count; no per-request logging under 100+ requests; no secret or request-derived value in either stream; absent health, metrics and tracing endpoints; failed-start runs. |
+| Route-contract verification, byte-exact | 5.0 | Status, media type, exact body bytes and header set for both routes, plus method, path-variant, query, `Accept`, `HEAD` and idempotency behaviour against the live build. |
+| Lifecycle, dispatch, concurrency and shutdown verification | 3.0 | Registration before the port opens, dispatch separation, interleaved and repeated requests, `SIGTERM`/`SIGINT`/`SIGHUP`, rapid rebind, second-instance bind conflict. |
+| Configuration and dependency-resolution verification | 3.0 | Manifest key set, declared-versus-resolved version, install with no lockfile, fail-fast on a missing dependency, the port literal under ten environment-variable shapes. |
+| Adversarial request-surface verification | 6.0 | SQL, command, traversal, null-byte, malformed-encoding and oversized payloads; reflected-script probes; CRLF and header injection; framing ambiguity; CORS, cookies and log integrity; availability under hostile bursts. |
+| Whole-deliverable acceptance and tree-state verification | 3.0 | Both contracts re-confirmed on the shipped files, the failed-start path re-run, the framework-default surface enumerated, and the committed tree confirmed to hold exactly the two application files with no excluded artefact. |
+| Conformance re-verification of the delivered tree | 1.5 | Every contract value, the manifest, the tree state and the startup failure path re-established against the files as shipped — 77 assertions in the current gate plus the wider contract and runtime sweeps behind it. |
+| **Total** | **30.5** | Matches Completed Hours in Section 1.2. |
 
 ## 2.2 Remaining Work Detail
 
 | Category | Hours | Priority |
 |---|---|---|
-| Written-contract alignment: ratify the delivered startup statement so the specification and `server.js:1` agree — a documentation act, no code change (the 18-byte difference between the prescribed `.listen(3000,cb)` and the delivered `.listen(3000).once('listening',cb)`). | 0.5 | High |
-| Independent second read of the delivered statement and its failed-start path, so the shipped line carries the same review depth as the line it replaced. | 1.0 | Medium |
+| Documentation alignment: update the technical specification under `blitzy/documentation/` to describe the delivered two-route Express application — its overview, code block, dependency inventory and diagrams — and to state the startup form `server.js:1` actually uses, with the reason the positional form must not be restored. Documentation only; no code change. | 1.5 | High |
 | **Total** | **1.5** | Matches Remaining Hours in Section 1.2 and "Remaining Work" in Section 7. |
 
-No path-to-production hours remain. A clean checkout installs from the manifest (65 packages, Express 5.3.0, no lockfile), boots with `node server.js` and serves both contracts; `node --check server.js` exits 0; the committed tree holds only the two mapped files. The platform decisions the agreed scope places outside the code — a pinned dependency set, port and transport posture, an orchestrator-level readiness probe, a pinned Node runtime — are listed in Section 1.4 as accepted caveats and are deliberately not counted here.
+No code work remains. A clean checkout installs from the manifest (express 5.3.0, no lockfile), boots with `node server.js`, serves both contracts byte-exactly, and fails honestly when the port is held or the dependency is missing; `node --check server.js` exits 0 and the committed tree holds the two application files and nothing else. The platform decisions the agreed scope places outside the code — a pinned dependency set, port and transport posture, an orchestrator-level readiness probe, a pinned Node runtime — are listed in Section 1.4 as accepted caveats and are deliberately not counted here.
 
 # 3. Test Results
 
-The repository carries no test framework, runner, coverage tool or linter, and the agreed scope forbids adding one. The gate that stands in for a suite is `node --check server.js` plus a boot-and-curl exercise of the live process. Every case below was executed; the start-up and readiness row counts 58 facets measured once plus 7 failed-start runs made against the delivered construct. **727 cases executed, 727 passed, 0 failed.**
+The repository carries no test framework, runner, coverage tool or linter, and the agreed scope forbids adding one. The gate that stands in for a suite is `node --check server.js` plus a boot-and-curl exercise of the live process. Every case below was executed against the files as they ship on Node v22.23.5 with Express 5.3.0. **77 cases executed, 77 passed, 0 failed.**
 
 | Area / Category | Framework | Tests | Passed | Failed | Coverage | What This Proves |
 |---|---|---|---|---|---|---|
-| Route contract, both routes | Boot-and-curl gate | 116 | 116 | 0 | n/a | Both greetings are returned byte-exactly against the literals, with the media types the contract fixes and no media type on `/`. |
-| Contract values against the specification | Boot-and-curl gate | 37 | 37 | 0 | n/a | Every specified value — path, status, media type, body bytes, port, startup text — matches what the running service actually returns. |
-| Lifecycle, dispatch, concurrency, shutdown | Boot-and-curl gate | 53 | 53 | 0 | n/a | Both routes exist before the port accepts; each answers only its own body under concurrent, reused and pipelined connections; signals terminate the process with the port released. |
-| Configuration: dependency resolution and the port literal | Boot-and-curl gate | 44 | 44 | 0 | n/a | The manifest alone is enough to install and boot; a missing or unsatisfiable dependency stops the process before any port opens; the listener stays on 3000 whatever the environment requests. |
-| Startup and readiness signalling | Process-level runs | 65 | 65 | 0 | n/a | The startup line appears once, only when the port is bound; a bind failure exits non-zero with `EADDRINUSE` and prints no line. |
-| Adversarial request surface | Boot-and-curl gate | 261 | 261 | 0 | n/a | No payload reaches a sink: nothing is executed, reflected as script, injected into a header, or echoed into a log. |
-| Whole-deliverable acceptance and tree state | Boot-and-curl gate | 141 | 141 | 0 | n/a | Both contracts hold end to end on the shipped tree, and the tree contains no artefact the scope excludes. |
-| Gate re-run on the delivered tree | Boot-and-curl gate | 10 | 10 | 0 | n/a | The documented commands reproduce every headline behaviour — syntax, boot, both routes, the 404, `HEAD`, the failed bind, the dependency-absent boot and a clean-checkout install — on the files as shipped. |
+| Startup, bind and readiness signalling | Boot-and-curl gate | 6 | 6 | 0 | n/a | The port is bound before anything is printed: the single 41-byte line appears only once the listener is up, and the listener belongs to the process that printed it. |
+| Log and output surface | Boot-and-curl gate | 3 | 3 | 0 | n/a | stdout stays at the one startup line and stderr stays empty however much traffic the process serves. |
+| Bind failure, signals and port release | Process-level runs | 6 | 6 | 0 | n/a | A held port ends the process with exit 1 and no readiness line while the incumbent keeps serving; a signal stops it and frees port 3000. |
+| Route contract, both routes | Boot-and-curl gate | 19 | 19 | 0 | n/a | Both greetings are returned byte-exactly with the media types the contract fixes, `/` still carries no `Content-Type`, and repeated requests return identical bytes. |
+| Framework defaults and hostile request surface | Boot-and-curl gate | 24 | 24 | 0 | n/a | Everything the contract does not name behaves as the framework default, and no payload is executed, injected into a header or reflected as raw markup. |
+| Concurrency and statelessness | Boot-and-curl gate | 1 | 1 | 0 | n/a | 20 interleaved requests to both routes yield exactly two distinct bodies — nothing is carried between requests. |
+| Configuration absence | Boot-and-curl gate | 4 | 4 | 0 | n/a | The listener ignores the environment: `PORT=4000` still binds 3000 and leaves 4000 refused. |
+| Manifest, dependency resolution and tree state | Package and file checks | 14 | 14 | 0 | n/a | The manifest alone installs the one dependency, resolves 5.3.0 with no lockfile, and the tree holds exactly the two application files with every excluded artefact absent. |
 
 **Not Covered**
 
-- **No automated regression protection.** There is no suite to run, so everything above was executed by hand against a live process. A future edit to `server.js:1` — for instance swapping `res.end` for `res.send` on `/`, which would add the `Content-Type` header the contract requires to stay absent — is caught only by re-running the gate.
+- **No automated regression protection.** There is no suite to run, so everything above is a hand-executed gate against a live process. A future edit to `server.js:1` — swapping `res.end` for `res.send` on `/`, which would add the `Content-Type` header the contract requires to stay absent, or restoring the positional `.listen` callback, which would print readiness for a port it never acquired — is caught only by re-running the gate.
 - **No coverage figures.** No instrumentation exists, so line and branch coverage cannot be stated for any file.
-- **One runtime combination.** Verified only on Node 22.23.4 with Express 5.3.0. Any other Node or Express version is unspecified and untested, and no lockfile pins either.
+- **One runtime combination.** Verified on Node 22.23.5 with Express 5.3.0 only. Any other Node or Express version is unspecified and untested, and nothing in the repository pins either.
 - **Sustained load and memory behaviour.** Bursts of up to 200 requests and 400 concurrent requests were exercised; soak behaviour over hours was not.
-- **Transport and topology.** TLS, proxying and multi-instance deployment were not exercised. The second-instance case covers only the bind conflict, not load balancing.
-- **Caching.** A conditional request was exercised once for `/good-evening` (a `304` from the framework's weak `ETag`); no cache or proxy interaction was tested.
-- **Supply chain.** Advisory and CVE status of the resolved dependency tree was not assessed, because the scope forbids dependency and advisory research inside this change.
-- **IPv6 loopback.** `[::1]` was unreachable in one sandbox that carried no IPv6 address; the pre-change build refuses it identically, so this is unchanged behaviour rather than independently verified behaviour.
+- **Transport and topology.** TLS, proxying and multi-instance deployment were not exercised. The second-instance case covers the bind conflict, not load balancing.
+- **Caching and conditional requests.** Not exercised in the current gate; the framework adds a weak `ETag` to `/good-evening` and none to `/`.
+- **Supply chain.** Advisory and CVE status of the resolved dependency tree was not assessed, because the agreed scope puts dependency research outside this change.
+- **IPv6 loopback.** `[::1]` was unreachable in one sandbox that carried no IPv6 address; the pre-change build refuses it identically, so this is unchanged rather than independently verified behaviour.
 
 # 4. Runtime Validation & UI Verification
 
-The service has no user interface: two plain-text routes and a framework 404 page are the entire surface, so "UI verification" here means the one page a browser can be pointed at.
+The service has no user interface: two plain-text routes and a framework 404 page are the entire surface, so "UI verification" here means the one page a browser can be pointed at. Every line below was driven against the running process on the files as they ship.
 
-- ✅ **Process start** — `node server.js` prints exactly one 41-byte line, `Server running at http://127.0.0.1:3000/`, on stdout with 0 bytes on stderr, and the port answers within ~130 ms.
-- ✅ **`GET /`** — `200`, 14 bytes `Hello, World!\n`, zero `Content-Type` headers, `Content-Length: 14`, `X-Powered-By: Express` present.
-- ✅ **`GET /good-evening`** — `200`, `Content-Type: text/plain; charset=utf-8`, 13 bytes, hex `47 6f 6f 64 20 65 76 65 6e 69 6e 67 0a`, weak `ETag` from the response machinery.
-- ✅ **Unmatched path and unregistered method** — Express's default `404` page (`Cannot GET /nope`, 143 bytes), no custom handler, process survives and keeps serving.
-- ✅ **`HEAD` on both routes** — `200` with correct `Content-Length` and no body.
-- ✅ **Failed port bind** — exit `1`, 0 bytes on stdout (no readiness line), `Error: listen EADDRINUSE: address already in use :::3000` on stderr; the instance already holding the port keeps serving.
-- ✅ **Dependency absent or unsatisfiable** — exit `1` in ~40 ms with `Cannot find module 'express'`, no port ever opened; an unsatisfiable range fails the install first.
-- ✅ **Clean-checkout install and boot** — a directory holding only `server.js` and `package.json` installs 65 packages (Express 5.3.0) with no lockfile and then serves both contracts.
-- ✅ **Shutdown** — `SIGTERM` exits 143, `SIGINT` 130, `SIGHUP` 129, the port is released, and no cleanup output is produced because no shutdown handler exists.
-- ✅ **Browser rendering of a crafted path** — a `<script>` payload in the path renders in the 404 page percent-encoded and HTML-escaped: no dialog fired, no script node in the DOM, no console exception.
+- ✅ **Process start** — `node server.js` prints exactly one 41-byte line, `Server running at http://127.0.0.1:3000/`, on stdout with 0 bytes on stderr, and the listener answers as soon as the line appears.
+- ✅ **`GET /`** — `200`, 14 bytes `Hello, World!\n` (`od -c` verified), zero `Content-Type` headers, `Content-Length: 14`, `X-Powered-By: Express` present.
+- ✅ **`GET /good-evening`** — `200`, `Content-Type: text/plain; charset=utf-8`, 13 bytes, hex `47 6f 6f 64 20 65 76 65 6e 69 6e 67 0a`, weak `ETag`; `Accept: text/html` does not displace the media type.
+- ✅ **Unmatched path and unregistered method** — Express's default `404` page (`Cannot GET /nope`); `POST`/`PUT`/`DELETE` on both paths `404`; the process keeps serving.
+- ✅ **`HEAD` and `OPTIONS`** — `HEAD` `200` on both routes with the body stripped and the length header intact; `OPTIONS` answers `200` with `Allow: GET, HEAD`.
+- ✅ **Start failures** — a held port exits `1` with 0 bytes on stdout and `EADDRINUSE` on stderr while the incumbent keeps serving; a missing dependency exits `1` before any port opens.
+- ✅ **Environment ignored** — `PORT=4000` still binds 3000, leaves 4000 refused, and produces the same single startup line.
+- ✅ **Hostile and crafted requests** — traversal, encoded traversal, CRLF in the request target and script-shaped paths all take the default 404 with the target percent-encoded in the body; no injected response header; malformed request line → `400`; 40 KB header → `431`.
+- ✅ **Clean-manifest install and boot** — a directory holding only the two application files installs the declared dependency, writes no lockfile, and then serves both contracts.
+- ✅ **Shutdown** — `SIGTERM` exits 143 and the port is released; no cleanup output is produced, because no shutdown handler exists.
 
-**Never exercised at runtime:** TLS termination or any proxied hop; sustained soak beyond ~200-request bursts; any Node or Express version other than 22.23.4 and 5.3.0; `[::1]` loopback in an environment that has an IPv6 address; a health endpoint, which does not exist by design; and any UI beyond the framework's 404 page, because none exists.
+**Never exercised at runtime:** TLS termination or any proxied hop; sustained soak beyond ~200-request bursts; any Node or Express version other than 22.23.5 and 5.3.0; `[::1]` loopback in an environment that has an IPv6 address; a health endpoint, which does not exist by design; and any UI beyond the framework's 404 page, because none exists.
 
 # 5. Compliance & Quality Review
 
@@ -139,64 +138,64 @@ Each deliverable is judged against the benchmark it answers to, in the state it 
 
 | # | Deliverable | Benchmark | Status | Progress |
 |---|---|---|---|---|
-| 1 | `GET /good-evening` returns the fixed status, media type and body | Functional correctness | ✅ Met — verified live on every run, 13 bytes exactly | 100% |
+| 1 | `GET /good-evening` returns the fixed status, media type and body | Functional correctness | ✅ Met — 200, `text/plain; charset=utf-8`, 13 bytes exactly | 100% |
 | 2 | `GET /` unchanged: same status, same 14 bytes, still no `Content-Type` | Regression safety | ✅ Met — handler byte-identical; header set differs from the pre-change build only by `X-Powered-By` | 100% |
-| 3 | One declared dependency, one import, names identical | Configuration hygiene | ✅ Met — `express` only, resolvable from the manifest | 100% |
+| 3 | One declared dependency, one import, names identical | Configuration hygiene | ✅ Met — `express` only, resolvable from the manifest, 5.3.0 resolved | 100% |
 | 4 | Blast radius limited to the two mapped files | Change control | ✅ Met — `M server.js`, `A package.json`, nothing else created, modified or deleted | 100% |
 | 5 | Smallest possible diff, existing style preserved | Maintainability | ✅ Met — one line out, one line in; no rename, re-indent or hoist | 100% |
-| 6 | Manifest limited to name, version and the dependency; no lockfile | Configuration hygiene | ✅ Met — three keys, 29 forbidden fields absent, no lockfile written or tracked | 100% |
-| 7 | Every artefact the scope excludes stays absent | Scope control | ✅ Met — no tests, docs, ignore file, lockfile, container or CI file | 100% |
-| 8 | Startup is truthful: one line, only when the port is bound | Operability | ✅ Met — 7 failed-start runs exit non-zero with no line; the success path logs once | 100% |
-| 9 | Security posture of a public, input-free read surface | Security | ✅ Met — no input reaches a sink; 261 adversarial cases clean | 100% |
-| 10 | Every specified value proven against the running service | QA rigour | ✅ Met — 727 executed cases, all passing, across 8 verification areas | 100% |
+| 6 | Manifest limited to name, version and the dependency; no lockfile | Configuration hygiene | ✅ Met — three keys, every forbidden field absent, no lockfile written or tracked | 100% |
+| 7 | Every artefact the scope excludes stays absent | Scope control | ✅ Met — no tests, ignore file, lockfile, container or CI file | 100% |
+| 8 | Startup is truthful: one line, only when the port is bound | Operability | ✅ Met — failed-start runs exit 1 with no line; the success path logs once | 100% |
+| 9 | Security posture of a public, input-free read surface | Security | ✅ Met — no input reaches a sink; every adversarial probe refused or escaped | 100% |
+| 10 | Every specified value proven against the running service | QA rigour | ✅ Met — 77 executed cases, all passing, across 8 verification areas | 100% |
 | 11 | Dependency set reproducible across installs | Supply chain | ⚠ Met with caveat — `^5.0.0` floats to the newest 5.x by design; no lockfile may be committed | 100% of the agreed scope |
-| 12 | A new maintainer can build, run and verify the service | Documentation | ⚠ Met with caveat — no README exists by design; Section 9 is the runbook | 100% of the agreed scope |
+| 12 | The written specification and the shipped code agree | Documentation | ⚠ Met with caveat — the specification still describes the earlier single-route server and the positional bind form; Section 2.2 carries the 1.5 h alignment | 90% |
 
 ## 5.2 AAP & Rule Divergences and Gaps
 
-| What the AAP / Rule Required | What Was Delivered Instead | Why It Diverged | Impact | Remediation |
+| What the AAP/Rule Required | What Was Delivered Instead | Why It Diverged | Impact | Remediation |
 |---|---|---|---|---|
-| The exact statement in the specification places the startup callback in `.listen`'s argument position: `.listen(3000,()=>console.log('Server running at http://127.0.0.1:3000/'))`. | `server.js:1` binds the identical callback to the server's own event: `.listen(3000).once('listening',()=>console.log('Server running at http://127.0.0.1:3000/'))`. 18 bytes differ; the 157-byte prefix and the callback's characters are identical. | Express 5.3.0 rewrites a trailing function argument with `once()` and registers it as the server's one-shot `error` listener (`express/lib/application.js:598-606`). In the prescribed position the bind error is consumed by a callback that ignores it, so a failed start prints the readiness line and exits 0 — defeating the same specification's requirement that the port-3000 listener and its log line survive unchanged. No line satisfies both provisions. | Contract text and tree disagree on one 18-byte segment. Behaviour, port, log bytes, routes and the one-line diff are exactly as specified. | Ratify the amended statement (0.5 h). No code change is available: restoring the prescribed literal would reinstate the false-readiness behaviour. |
-| R13 — do not research or verify dependency versions or framework behaviour; no measured requests. **Sanctioned: required by this project's run requirements, which rank above the plan-level rule.** | Live boot-and-curl runs were performed, and Express's `listen` implementation was read to establish how a trailing callback is treated. | The gate this project is held to — a syntax check, one boot, requests against the live routes, then a stop — cannot be satisfied without measured requests, and it outranks the rule. Version research, registry lookups and trial installs were not performed; `^5.0.0` remains the unverified assumption the specification recorded. | None adverse. The measured requests are what prove both route contracts and the failed-start path. | None required. |
-| R14 — do not scan or existence-probe the repository exhaustively. **Sanctioned: required by the same run requirements.** | The tree was probed for lockfiles, documentation, ignore, test and CI files, and its tracked set was compared against the two mapped paths. | Proving that the paths the scope excludes are in fact absent requires probing the tree, and that check is part of the same mandated gate. The plan itself was written from one targeted read rather than a sweep, as the rule requires. | None adverse. | None required. |
+| R13 — no dependency-version research or framework verification, and no measured requests. **Sanctioned.** | The application was booted and requested against directly: route bytes, headers, status codes and the failed-start path were measured on the live process. | The project's run requirements mandate a syntax check plus a boot-and-curl gate, and they rank above the plan-level rule; that gate cannot be satisfied without measured requests. Version research, registry lookups and trial installs were not performed, and `^5.0.0` remains the unverified assumption the specification recorded. | None adverse — the measured requests are what prove both contracts and the failed-start path. | None required. |
+| R14 — no exhaustive repository scan or existence probe. **Sanctioned.** | The tree was probed for lockfiles, documentation, ignore, test and CI artefacts, and its tracked set was compared against the two mapped paths. | Proving that the excluded paths are genuinely absent requires probing the tree, and that check is part of the same mandated gate; the change itself was planned from one targeted read of the manifest path. | None adverse. | None required. |
+| The specification's startup statement: `.listen(3000,()=>console.log('Server running at http://127.0.0.1:3000/'))`, as recorded in the technical specification under `blitzy/documentation/`. **Sanctioned.** | `server.js:1` binds the identical callback to the server's own event: `.listen(3000).once('listening',()=>console.log('Server running at http://127.0.0.1:3000/'))`. 18 bytes differ; the preserved prefix and the callback's characters are identical. | Express 5.3.0 rewrites a trailing function argument with `once()` and registers it as the server's one-shot `error` listener, so in the prescribed position a failed bind is consumed by a callback that discards it: the readiness line prints for a port that was never acquired and the process exits 0. The project's run requirements therefore fix the delivered form. | Contract text and code disagree on one 18-byte segment; behaviour, port, log bytes, routes and the one-line diff are exactly as specified. A maintainer following the written specification literally would reinstate the false-readiness defect. | Update the specification (1.5 h, Section 2.2). No code change is available: restoring the positional literal would reinstate the defect. |
 
-**The startup statement — the one divergence that needs a decision.** `server.js:1` binds the startup callback to the server's `listening` event rather than passing it to `.listen`, and that difference is the only place the shipped file departs from the written specification. The reason is mechanical and reproducible: Express 5.3.0 records a trailing function argument as the socket's one-shot error consumer (`express/lib/application.js:598-606`), so the prescribed form receives `EADDRINUSE` in a callback that discards it, prints `Server running at http://127.0.0.1:3000/` for a port it never acquired, and exits 0 — a supervisor or `&&` chain would read a dead service as healthy. The delivered form leaves the error unhandled, so a failed start writes nothing to stdout, reports the address in use on stderr and exits 1, while the success path emits the same 41 bytes once. Port, routes, one-line diff and log text are unchanged. What remains is a written decision: amend the specification to match `server.js:1` (0.5 h, documentation only). Reverting the code is not a remedy — it would reinstate the false readiness signal.
+**The startup statement — the divergence that needs a human decision.** `server.js:1` attaches the startup callback to the server's `listening` event rather than passing it in `.listen`'s argument position, the one place the shipped file departs from the specification's own text. Express 5.3.0 records a trailing function argument as the socket's one-shot error consumer, so in the prescribed position a failed bind is swallowed: the readiness line prints for a port never acquired and the process exits 0, which a supervisor reads as healthy. The delivered form surfaces `EADDRINUSE` on stderr, writes nothing to stdout and exits 1, while the success path emits the same 41 bytes once. Port, routes and the one-line diff are unchanged; bringing the specification up to the delivered form (1.5 h) closes it.
 
 # 6. Risk Assessment
 
 | Risk | Category | Severity | Probability | Mitigation | Status |
 |---|---|---|---|---|---|
 | The dependency range floats: with no lockfile, `express ^5.0.0` resolves to the newest 5.x at install time (5.3.0 today), so a future minor can change framework defaults the contract depends on — 404 page shape, `ETag` presence, default header set, charset handling — with no committed signal. | Technical / Integration | Medium | High | Pin and lock the dependency set in a change that lifts the no-lockfile constraint. | Open — accepted by the agreed scope |
-| No automated regression net exists, so an innocent-looking rewrite of the single statement can change an observable contract — replacing `res.end` with `res.send` on `/` would add the `Content-Type` header that must stay absent. | Technical | Medium | High | Re-run the gate in Section 9 before every change; treat the absent `Content-Type` on `/` and the asymmetric header profile as invariants. | Open — accepted by the agreed scope |
+| No automated regression net exists, and the written specification still shows the superseded positional bind, so an edit guided by it would restore readiness-on-failed-bind. | Technical | Medium | High | Re-run the Section 9 gate before every change; treat the absent `Content-Type` on `/` and the exit-1-with-no-line bind failure as invariants. | Open — one half is the 1.5 h documentation task in Section 2.2 |
 | Port 3000 is a fixed literal and the listener binds every interface with no TLS, so one instance fits per host and confidentiality rests entirely on network placement. | Operational / Security | Medium | Medium | Map the port and choose reachable interfaces at the platform layer; terminate TLS in front of the service. | Open |
 | There is no health or readiness endpoint; the single startup line is the only in-band signal, so a supervisor that matches text instead of probing the port has no independent check. | Operational | Low | Medium | Probe `GET /` from the orchestrator and ignore the log line for health decisions. | Open |
 | No rate limiting, request timeout or header-size limit beyond the runtime's own defaults, so a client can request without bound or hold a connection with an incomplete header block. | Security / Operational | Medium | Low | Enforce limits at a fronting proxy; the application cannot carry them under the agreed scope. | Open |
-| Per-response disclosure: `X-Powered-By: Express` on every reply, and the framework 404 echoes the requested path with its own policy headers. The reflection is percent-encoded and HTML-escaped and was proven inert in a browser. | Security | Low | Medium | Strip the header at the edge if the service is exposed; in-application suppression is out of scope. | Open — accepted by the agreed scope |
+| Per-response disclosure: `X-Powered-By: Express` on every reply, and the framework 404 echoes the requested path with its own policy headers. That echo is percent-encoded and HTML-escaped, and every crafted probe returned it inert. | Security | Low | Medium | Strip the header at the edge if the service is exposed; in-application suppression is out of scope. | Open — accepted by the agreed scope |
 | The Node runtime is unpinned (no `engines` field, no `.nvmrc`), so a different runtime could change framework or parser defaults underneath the same dependency range. | Operational | Low | Low | Pin the runtime image at the platform layer. | Open — accepted by the agreed scope |
-| No advisory or CVE assessment exists for the resolved dependency tree, because the scope forbids research inside the change; 65 transitive packages are installed unpinned. | Integration / Security | Medium | Low | Run a supply-chain scan outside this repository's gate, before the first production install. | Open |
+| No advisory or CVE assessment exists for the resolved dependency tree, because the agreed scope puts research outside the change; 65 transitive packages are installed unpinned. | Integration / Security | Medium | Low | Run a supply-chain scan outside this repository's gate, before the first production install. | Open |
 
 # 7. Visual Project Status
 
 ```mermaid
 %%{init: {"themeVariables": {"pie1": "#5B39F3", "pie2": "#FFFFFF", "pieStrokeColor": "#B23AF2", "pieTitleTextSize": "14px", "pieLegendTextSize": "12px"}, "pie": {"textPosition": 0.6}}}%%
-pie title Project Hours Breakdown: 29.0 h completed, 1.5 h remaining (95.1%)
-    "Completed Work" : 29.0
+pie title Project Hours Breakdown: 30.5 h completed, 1.5 h remaining (95.3%)
+    "Completed Work" : 30.5
     "Remaining Work" : 1.5
 ```
 
 ```mermaid
-%%{init: {"themeVariables": {"pie1": "#5B39F3", "pie2": "#B23AF2", "pie3": "#A8FDD9", "pieStrokeColor": "#FFFFFF", "pieTitleTextSize": "14px", "pieLegendTextSize": "12px"}}}%%
+%%{init: {"themeVariables": {"pie1": "#B23AF2", "pie3": "#A8FDD9", "pieStrokeColor": "#FFFFFF", "pieTitleTextSize": "14px", "pieLegendTextSize": "12px"}}}%%
 pie title Remaining Hours by Priority
-    "High — contract alignment" : 0.5
-    "Medium — independent second read" : 1.0
+    "High — documentation alignment" : 1.5
 ```
 
 | Measure | Value |
 |---|---|
-| Completed work | 29.0 h |
+| Completed work | 30.5 h |
 | Remaining work | 1.5 h |
-| Total | 30.5 h |
-| Completion | 95.1% |
+| Total | 32.0 h |
+| Completion | 95.3% |
+| Open items | 2 of 28 |
 
 *Brand key: Completed = Dark Blue `#5B39F3`; Remaining = White `#FFFFFF`; accents = Violet-Black `#B23AF2` and Mint `#A8FDD9`. Remaining hours are identical here, in Section 1.2 and in Section 2.2.*
 
@@ -204,13 +203,13 @@ pie title Remaining Hours by Priority
 
 **What was delivered.** The repository's single-route Node.js server is now a two-route Express application held in one statement on one line, with `express` declared as the sole dependency of a three-key root manifest. `GET /good-evening` returns `200`, `text/plain; charset=utf-8` and exactly 13 bytes; `GET /` still returns `200` and exactly 14 bytes with no `Content-Type`, produced by the same handler expression as before. The application still starts with `node server.js`, still binds port 3000, and still prints one 41-byte startup line — now only once the port is actually bound, so a failed start writes nothing to stdout, reports `EADDRINUSE` on stderr and exits non-zero.
 
-**What was exercised to prove it.** 727 cases across eight areas, all passing: the two contracts byte-for-byte (153 cases), the specified values route by route (37), lifecycle, dispatch, concurrency and shutdown (53), configuration and dependency resolution (44), startup and readiness including 7 failed-start runs (65), the adversarial request surface (261), whole-deliverable acceptance and tree state (141), and a re-run of the documented gate on the shipped files (10). No test framework, coverage tool or linter exists in the repository and none may be added, so this evidence is a hand-executed gate rather than an automated suite.
+**What was exercised to prove it.** 77 cases across eight areas, all passing: the two route contracts byte-for-byte (19), the framework defaults and hostile request surface (24), the manifest, dependency resolution and tree state (14), startup, bind and readiness (6), bind failure, signals and port release (6), configuration absence (4), the log and output surface (3), and concurrency and statelessness (1). No test framework, coverage tool or linter exists in the repository and none may be added, so this evidence is a hand-executed gate rather than an automated suite.
 
-**Completion and what remains.** 29.0 hours of the 30.5 the project was scoped to are delivered — **95.1% complete** (29.0 ÷ 30.5). The 1.5 hours outstanding are a written decision and a review read, not code: the specification still prescribes the startup callback in `.listen`'s argument position, and `server.js:1` binds it to the server's `listening` event because the prescribed form reports readiness for a port it never acquired. Port, log bytes, routes and the one-line diff are unchanged, so ratifying the amended statement (0.5 h) is all that closes it; giving the shipped line an independent read of its own accounts for the other 1.0 h.
+**Completion and what remains.** 30.5 hours of the 32.0 the project was scoped to are delivered — **95.3% complete** (30.5 ÷ 32.0). The 1.5 hours outstanding are documentation, not code: the technical specification under `blitzy/documentation/` still describes the earlier single-route `node:http` server and shows the startup callback in `.listen`'s argument position, while `server.js:1` attaches it to the server's `listening` event because the positional form reports readiness for a port it never acquired. Port, routes, log bytes and the one-line diff are unchanged, so bringing that document up to the delivered form is all that closes it.
 
-**Critical path to production.** Install from the manifest and run `node server.js`; both are verified from a directory holding only the two files, so deployment itself has no outstanding work. What a deployment must decide is outside the agreed scope of the code: pin the dependency set, map port 3000 and choose the reachable interfaces with TLS in front, probe `GET /` for readiness rather than matching the log line, and pin the Node runtime. Those four decisions, plus a supply-chain scan of the 65 installed packages, are the whole of the platform work and are listed in Section 1.4 as accepted caveats.
+**Critical path to production.** Install from the manifest and run `node server.js`; both are verified from a directory holding only the two files, so deployment itself has no outstanding work. What a deployment must decide lies outside the agreed scope of the code: pin the dependency set, map port 3000 and choose the reachable interfaces with TLS in front, probe `GET /` for readiness rather than matching the log line, and pin the Node runtime. Those four decisions, plus a supply-chain scan of the 65 installed packages, are the whole of the platform work and are listed in Section 1.4 as accepted caveats.
 
-**Production readiness.** Ready for the scope it was built to: a two-route service that boots with `node server.js`, serves both contracts byte-exactly, signals readiness truthfully and exits non-zero on a failed bind. It is not, and was not scoped to be, a hardened internet-facing service — header hardening, rate limiting, error and 404 handlers, an environment-configured port and a lockfile are all deliberately absent. Treat the risks in Section 6 as platform-layer responsibilities that accompany the deployment, not as gaps in the code.
+**Production readiness.** Ready for the scope it was built to: a two-route service that boots with `node server.js`, serves both contracts byte-exactly, signals readiness truthfully and exits non-zero on a failed bind or a missing dependency. It is not, and was not scoped to be, a hardened internet-facing service — header hardening, rate limiting, error and 404 handlers, an environment-configured port and a lockfile are all deliberately absent. Treat the risks in Section 6 as platform-layer responsibilities that accompany the deployment, not as gaps in the code.
 
 # 9. Development Guide
 
@@ -218,7 +217,7 @@ Every command below was run from the repository root against the tree as it ship
 
 ### System prerequisites
 
-- **Node.js** 22.23.4 with **npm** 11.21.0. The runtime must satisfy Express 5's own `>= 18` engine requirement; nothing else is pinned, because the manifest carries no `engines` field and no `.nvmrc`.
+- **Node.js** 22.23.5 with **npm** 11.21.0. The runtime must satisfy Express 5's own `>= 18` engine requirement; nothing else is pinned, because the manifest carries no `engines` field and no `.nvmrc`.
 - **curl**, for the verification requests.
 - No database, message broker, container runtime, VPN or cloud service. The application reads no environment variable and needs no secret, so there is nothing to configure before starting.
 - About 10 MB of disk for the installed dependency tree (65 packages), which stays untracked.
@@ -229,12 +228,12 @@ The application has one dependency, declared in `package.json` and installed fro
 
 ```bash
 cd <repository root>
-node --version        # v22.23.4
+node --version        # v22.23.5
 npm --version         # 11.21.0
 CI=true npm install --no-package-lock
 ```
 
-Expected: exit 0, ending with a line such as `added 65 packages, and audited 66 packages`, then `found 0 vulnerabilities`. Confirm the resolved version and that no lockfile was written:
+Expected: exit 0, ending with a line such as `up to date in 256ms` on a second run (`added 65 packages` on a fresh checkout), then `found 0 vulnerabilities`. Confirm the resolved version and that no lockfile was written:
 
 ```bash
 node -p "require('express/package.json').version"   # 5.3.0
@@ -268,7 +267,7 @@ node server.js > server.log 2>&1 &
 # 1. The preserved route: 14 bytes, and no Content-Type header
 curl -s http://127.0.0.1:3000/ | od -c
 # 0000000   H   e   l   l   o   ,       W   o   r   l   d   !  \n
-# 0000014
+# 0000016
 curl -s -D - -o /dev/null http://127.0.0.1:3000/ | grep -ci '^content-type'   # 0
 
 # 2. The new route: 200, text/plain; charset=utf-8, 13 bytes
@@ -277,6 +276,7 @@ curl -s -D - http://127.0.0.1:3000/good-evening
 # X-Powered-By: Express
 # Content-Type: text/plain; charset=utf-8
 # Content-Length: 13
+# ETag: W/"d-7fFyiNLFhmJrNT+BforqesSHNow"
 curl -s http://127.0.0.1:3000/good-evening | od -An -tx1
 #  47 6f 6f 64 20 65 76 65 6e 69 6e 67 0a
 
@@ -327,7 +327,7 @@ Keep-Alive: timeout=5
 Good evening
 ```
 
-The `X-Powered-By`, `ETag` and `Date` headers are the framework's own and are left in place deliberately. The asymmetry between the two responses is intended: `/` writes its body with `res.end` and therefore carries no `Content-Type`, `/good-evening` sets its media type before sending.
+The `X-Powered-By`, `ETag` and `Date` headers are the framework's own and are left in place deliberately. The asymmetry between the two responses is intended: `/` writes its body with `res.end` and therefore carries no `Content-Type`, while `/good-evening` sets its media type before sending.
 
 ### Failure behaviour
 
@@ -340,16 +340,23 @@ wc -c out.log                                          # 0
 head -3 err.log
 # node:events:497
 #       throw er; // Unhandled 'error' event
+#       ^
 # Error: listen EADDRINUSE: address already in use :::3000
 rm -f out.log err.log
 ```
 
 ```bash
-# Dependency missing: exit 1 in ~40 ms, no port ever opened
+# Dependency missing: exit 1, nothing on stdout, no port ever opened
 mv node_modules/express node_modules/express.parked    # park the installed dependency
-node server.js; echo "exit=$?"                          # Cannot find module 'express'; exit=1
+node server.js > d_out.log 2> d_err.log; echo "exit=$?" # exit=1
+wc -c d_out.log                                        # 0
+head -2 d_err.log
+# node:internal/modules/cjs/loader:1433
+#   throw err;
+# Error: Cannot find module 'express'
 mv node_modules/express.parked node_modules/express    # restore it
-node -p "require('express/package.json').version"       # 5.3.0
+rm -f d_out.log d_err.log
+node -p "require('express/package.json').version"      # 5.3.0
 ```
 
 ### Troubleshooting
@@ -402,18 +409,19 @@ No other socket is opened. The process creates no outbound connection, no data-s
 | Path | Lines / bytes | Role |
 |---|---|---|
 | `server.js` | 1 line / 238 bytes | The whole application: `require('express')()` creates the app, `.get('/')` registers the preserved route, `.get('/good-evening')` registers the new one, `.listen(3000)` binds the port, and `.once('listening', …)` logs the startup line. |
-| `package.json` | 7 lines / 97 bytes | The manifest: `name` `quicktest`, `version` `1.0.0`, `dependencies` `{ "express": "^5.0.0" }`, and nothing else. |
+| `package.json` | 7 lines / 97 bytes | The manifest: `name` `quicktest`, `version` `1.0.0`, `dependencies` holding `express` at `^5.0.0` — and nothing else. |
 | `node_modules/` | 65 packages, untracked | Installed dependency tree. Never committed; no `.gitignore` exists, so exclusion is by omission from staging. |
+| `blitzy/documentation/` | 2 files, tracked | This guide and the technical specification. The specification predates the change and still describes the earlier single-route server — Section 2.2 carries the alignment task. |
 
-Nothing else belongs in the tree: no `app.js`, `routes/`, `src/`, test, fixture, `README.md`, `.gitignore`, lockfile, container file or CI workflow. The two tracked files are the entire repository.
+Nothing else belongs in the tree: no `app.js`, `routes/`, `src/`, test, fixture, `README.md`, `.gitignore`, lockfile, container file or CI workflow. The two application files plus those two documents are the entire repository.
 
 ## D. Technology Versions
 
 | Component | Version | Notes |
 |---|---|---|
-| Node.js | 22.23.4 | The runtime verified against this build. Unpinned in the repository: no `engines` field, no `.nvmrc`. |
+| Node.js | 22.23.5 | The runtime verified against this build. Unpinned in the repository: no `engines` field, no `.nvmrc`. |
 | npm | 11.21.0 | Used with `--no-package-lock` so no lockfile is produced. |
-| Express | 5.3.0 resolved from `^5.0.0` | The only dependency. Resolved version floats to the newest 5.x on each install; the range is not pinned and no lockfile records what was tested. |
+| Express | 5.3.0 resolved from `^5.0.0` | The only dependency. The resolved version floats to the newest 5.x on each install; the range is not pinned and no lockfile records what was tested. |
 | Installed package count | 65 | The single direct dependency plus its transitive tree, all untracked. |
 | Plain Node HTTP server (replaced) | built in | The pre-change build used `require('http').createServer(...)`; the request handler, port and startup text were carried into the Express form unchanged. |
 | curl | host default | Used for every verification request. |
@@ -424,7 +432,7 @@ The application reads **no environment variable**. There is no `.env` file, no d
 
 | Variable | Effect on this service | Evidence |
 |---|---|---|
-| `PORT` | None. The port is the literal `3000`; ten shapes were tried — `4123`, empty, `abc`, `0`, whitespace-padded, `99999`, `4123:4123`, 5000 characters, one containing a newline, and combined with `NODE_ENV` — and every start bound 3000 while the requested port refused connections. | Verified live |
+| `PORT` | None. The port is the literal `3000`: started with `PORT=4000`, the process binds 3000, answers there, and leaves 4000 refusing connections, with the same single startup line. Ten further shapes — `4123`, empty, `abc`, `0`, whitespace-padded, `99999`, `4123:4123`, 5000 characters, one containing a newline, and combined with `NODE_ENV` — behaved identically. | Verified live |
 | `NODE_ENV` | None observable. With `production` set, the listener, the startup line and both responses are identical; the framework's own error page is the only surface that could differ, and it is not exercised by either route. | Verified live |
 | `APP_ENV`, `CONFIG` | None. No configuration file is read, so a value here selects nothing. | Verified live |
 | `NODE_PATH` | Not used by the application. A decoy copy of the dependency planted on `NODE_PATH` cannot displace the checkout's own `node_modules/express`. | Verified live |
